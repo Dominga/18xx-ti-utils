@@ -2,7 +2,7 @@
 # Script to run on the target to configure the wl18xx-conf.bin file to match the device capabilities
 
 # version
-VERSION=1.2
+VERSION=1.3
 
 # defaults
 binary_name="/lib/firmware/ti-connectivity/wl18xx-conf.bin"
@@ -185,7 +185,7 @@ NUM_OF_ANTENNAS=-1;
 while [ $NUM_OF_ANTENNAS -eq -1 ]
 do
 	if [ $number_5G_antenna -eq 1 ]; then
-		read -p 'How many 5GHz antennas are fitted? [0/1/2] : ' NUM_OF_ANTENNAS
+		read -p 'How many 5GHz antennas are fitted (using 2 antennas requires a proper switch)? [0/1/2] : ' NUM_OF_ANTENNAS
 		case $NUM_OF_ANTENNAS in
 			"0") number_5G_antenna=0;;
 			"1") number_5G_antenna=1;;
@@ -204,29 +204,13 @@ if [[ $TI_MODULE -eq 1 ]] &&
    [[ $CHIP_FLAVOR -eq 1807 || $CHIP_FLAVOR -eq 1837 ]]; then
 	diversity_5g="y";
 	high_band_component_type=0x0a;
-	DIVERSITY=0;
+elif [ $number_5G_antenna -eq 2 ]; then
+	diversity_5g="y";
+	high_band_component_type=0x0a;
 else
 	diversity_5g="n";
 	high_band_component_type=0x09;
-	DIVERSITY=-1;
 fi
-
-while [ $DIVERSITY -eq -1 ]
-do
-	if [ $TI_MODULE -eq 0 ] && [ $number_5G_antenna -ge 1 ]; then
-		read -p 'Should 5GHz diversity be applied? [y/n] : ' diversity_5g
-		case $diversity_5g in
-			"n") high_band_component_type=0x09;DIVERSITY=0;;
-			"N") high_band_component_type=0x09;DIVERSITY=0;;
-			"y") high_band_component_type=0x0a;DIVERSITY=0;;  			 
-			"Y") high_band_component_type=0x0a;DIVERSITY=0;;
-			*) echo "Please enter y or n";DIVERSITY=-1;continue;;
-        esac
-	else
-		# set to required number to exit loop
-		DIVERSITY=0;
-	fi
-done
 
 
 # ask if SISO40 should be enabled
